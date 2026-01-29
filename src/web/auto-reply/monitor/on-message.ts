@@ -140,9 +140,20 @@ export function createWebOnMessageHandler(params: {
       });
       if (!gating.shouldProcess) return;
     } else {
-      // Ensure `peerId` for DMs is stable and stored as E.164 when possible.
       if (!msg.senderE164 && peerId && peerId.startsWith("+")) {
         msg.senderE164 = normalizeE164(peerId) ?? msg.senderE164;
+      }
+
+      // Feature: Route Inbound Messages from Allowed Numbers
+      // For DMs from external numbers (allowed via access-control), inject context so the agent knows who is speaking.
+      // This allows the agent to "hear" others in the main session and reply contextually.
+      if (msg.from !== msg.to) {
+        const label = msg.senderName?.trim() || msg.senderE164 || msg.from;
+        // Only inject if not already present (sanity check)
+        if (!msg.body.startsWith(`[Message from`)) {
+          msg.body = `[Message from ${label}]: ${msg.body}`;
+          logVerbose(`Injected sender context for external DM: ${label}`);
+        }
       }
     }
 

@@ -6,6 +6,9 @@ import process from "node:process";
 
 const args = process.argv.slice(2);
 const env = { ...process.env };
+// Add node executable directory to PATH to ensure pnpm (bundled with node) is found
+const nodeBinDir = path.dirname(process.execPath);
+env.PATH = `${nodeBinDir}${path.delimiter}${env.PATH || ""}`;
 const cwd = process.cwd();
 const compiler = env.CLAWDBOT_TS_COMPILER === "tsc" ? "tsc" : "tsgo";
 const projectArgs = ["--project", "tsconfig.json"];

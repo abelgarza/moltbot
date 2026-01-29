@@ -67,6 +67,14 @@ export function toWhatsappJid(number: string): string {
   if (withoutPrefix.includes("@")) return withoutPrefix;
   const e164 = normalizeE164(withoutPrefix);
   const digits = e164.replace(/\D/g, "");
+
+  // Fix for Mexico: +52 numbers need a '1' inserted after 52 if they are 10 digits long (12 total)
+  // +52 1 xxxxxxxxxx -> 521xxxxxxxxxx (correct)
+  // +52 xxxxxxxxxx -> 52xxxxxxxxxx (incorrect, needs '1')
+  if (digits.startsWith("52") && digits.length === 12) {
+    return `521${digits.slice(2)}@s.whatsapp.net`;
+  }
+
   return `${digits}@s.whatsapp.net`;
 }
 
